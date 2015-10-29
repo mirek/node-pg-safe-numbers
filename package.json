@@ -39,6 +39,6 @@
     "sequelize": "^3.13.0"
   },
   "peerDependencies": {
-    "pg": "^4.4.3"
+    "pg": "^4"
   }
 }
