@@ -42,6 +42,8 @@ And:
     import Sequelize from 'sequelize';
     ...
 
+If you're not on ES6 follow https://babeljs.io/docs/usage/polyfill and you can use this library from your ES5, grampa :)
+
 ## License
 
 MIT
