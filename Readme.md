@@ -7,41 +7,36 @@ string value, null etc.
 
 ## Example
 
-`setup-pg-safe-numbers.js`:
+Setup your configuration:
+
+    // setup-pg-safe-numbers.js
 
     import util from 'util';
     import { pgSetTypeParsers } from 'pg-safe-numbers';
 
-    function stack() {
-      return new Error().stack;
-    }
+    // Setup parsers for unsafe numbers.
+    pgSetTypeParsers({
 
-    let once = false;
+      // Handle unsafe integers, ie. >= Math.pow(2, 53)
+      unsafeInt(parsed, text) {
+        console.error(`Unsafe int ${util.inspect(text)}) parse to ${util.inspect(parsed)}.\n${new Error().stack}`);
+        return parsed;
+      },
 
-    // Invoke only once.
-    if (!once) {
+      // Handle unsafe floats.
+      unsafeFloat(parsed, text) {
+        console.error(`Unsafe float ${util.inspect(text)}) parse to ${util.inspect(parsed)}.\n${new Error().stack}`);
+        return parsed;
+      }
 
-      // Setup parsers for unsafe numbers.
-      pgSetTypeParsers({
+    });
 
-        // Handle unsafe integers, ie. >= Math.pow(2, 53)
-        unsafeInt(parsed, text) {
-          console.error(`Unsafe int ${util.inspect(text)}) parse to ${util.inspect(parsed)}.\n${stack()}`);
-          return parsed;
-        },
+    // Or simply to use default TypeError throw:
+    // pgSetTypeParsers();
 
-        // Handle unsafe floats.
-        unsafeFloat(parsed, text) {
-          console.error(`Unsafe float ${util.inspect(text)}) parse to ${util.inspect(parsed)}.\n${stack()}`);
-          return parsed;
-        }
+And:
 
-      });
-
-      once = true;
-    }
-
-`my.js`:
+    // my.js
 
     require('./setup-pg-safe-numbers'); // NOTE: Doesn't really need to be before importing sequelize.
     import Sequelize from 'sequelize';
