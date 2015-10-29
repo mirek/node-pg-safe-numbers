@@ -1,7 +1,12 @@
-/* eslint-disable no-unused-expressions */
+/* eslint-disable no-unused-expressions, max-len */
 
-import { safeParseInt, safeParseFloat } from '../lib';
-import { expect } from 'chai';
+import { safeParseInt, safeParseFloat, pgSetTypeParsers } from '../lib';
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import Sequelize from 'sequelize';
+
+chai.use(chaiAsPromised);
+const { expect } = chai;
 
 describe('safeParseInt', function () {
   it('should work', function () {
@@ -25,4 +30,36 @@ describe('safeParseFloat', function () {
     expect(safeParseFloat('0.100')).to.eq(0.1);
     expect(safeParseFloat('1234.5')).to.eq(1234.5);
   });
+});
+
+describe('Sequelize', function () {
+
+  it('should not work yet', async function () {
+    const sequelize = new Sequelize('postgres://localhost/test', { logging: null });
+    expect(await sequelize.query('select 1::bigint foo', { type: 'SELECT' })).to.deep.eq([{ foo: '1' }]);
+    expect(await sequelize.query('select 9007199254740992::bigint foo', { type: 'SELECT' })).to.deep.eq([{ foo: '9007199254740992' }]);
+    expect(await sequelize.query('select 1234.5::numeric foo', { type: 'SELECT' })).to.deep.eq([{ foo: '1234.5' }]);
+    sequelize.close();
+  });
+
+  it('should return original text for unsafe', async function () {
+    pgSetTypeParsers({ unsafeInt: (parsed, text) => text, unsafeFloat: (parsed, text) => text });
+    const sequelize = new Sequelize('postgres://localhost/test', { logging: null });
+    expect(await sequelize.query('select 1::bigint foo', { type: 'SELECT' })).to.deep.eq([{ foo: 1 }]);
+    expect(await sequelize.query('select 1234.5::numeric foo', { type: 'SELECT' })).to.deep.eq([{ foo: 1234.5 }]);
+    expect(await sequelize.query('select 9007199254740992::bigint foo', { type: 'SELECT' })).to.deep.eq([{ foo: '9007199254740992' }]);
+    expect(await sequelize.query('select 1234.5::numeric foo', { type: 'SELECT' })).to.deep.eq([{ foo: 1234.5 }]);
+    sequelize.close();
+  });
+
+  it('should returned unsafe parsed value', async function () {
+    pgSetTypeParsers({ unsafeInt: parsed => parsed, unsafeFloat: parsed => parsed });
+    const sequelize = new Sequelize('postgres://localhost/test', { logging: null });
+    expect(await sequelize.query('select 1::bigint foo', { type: 'SELECT' })).to.deep.eq([{ foo: 1 }]);
+    expect(await sequelize.query('select 1234.5::numeric foo', { type: 'SELECT' })).to.deep.eq([{ foo: 1234.5 }]);
+    expect(await sequelize.query('select 9007199254740992::bigint foo', { type: 'SELECT' })).to.deep.eq([{ foo: 9007199254740992 }]);
+    expect(await sequelize.query('select 0.00000000000000000001::numeric foo', { type: 'SELECT' })).to.deep.eq([{ foo: 0.00000000000000000001 }]);
+    sequelize.close();
+  });
+
 });

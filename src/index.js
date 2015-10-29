@@ -8,7 +8,7 @@ import util from 'util';
  * @return Optional value to be returned by the parser.
  */
 function defaultUnsafeInt(parsed, text) {
-  throw new TypeError(`Unsafe int parse ${util.inspect(text)}) to ${util.inspect(parsed)}.`);
+  throw new TypeError(`Unsafe int parse ${util.inspect(text)} to ${util.inspect(parsed)}.`);
 }
 
 /**

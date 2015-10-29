@@ -7,7 +7,7 @@
   "repository": "mirek/node-pg-safe-numbers",
   "main": "lib/index.js",
   "scripts": {
-    "test": "mocha -r babel/register spec",
+    "test": "npm run prepublish && mocha --compilers js:babel/register spec",
     "prepublish": "rm -rf lib && babel --stage 0 src --out-dir lib"
   },
   "keywords": [
@@ -32,7 +32,11 @@
   "devDependencies": {
     "babel": "^5.8.29",
     "chai": "^3.4.0",
-    "mocha": "^2.3.3"
+    "chai-as-promised": "^5.1.0",
+    "mocha": "^2.3.3",
+    "pg": "^4.4.3",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^3.13.0"
   },
   "peerDependencies": {
     "pg": "^4.4.3"
