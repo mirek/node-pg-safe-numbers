@@ -1,0 +1,40 @@
+{
+  "name": "pg-safe-numbers",
+  "version": "0.0.1",
+  "description": "Safe number parsing for pg and Sequelize.",
+  "homepage": "https://github.com/mirek/node-pg-safe-numbers",
+  "bugs": "https://github.com/mirek/node-pg-safe-numbers/issues",
+  "repository": "mirek/node-pg-safe-numbers",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "mocha -r babel/register spec",
+    "prepublish": "rm -rf lib && babel --stage 0 src --out-dir lib"
+  },
+  "keywords": [
+    "sequelize",
+    "pg",
+    "postgres",
+    "postgresql",
+    "number",
+    "numeric",
+    "int",
+    "int8",
+    "bigint",
+    "parsing",
+    "parser",
+    "safe"
+  ],
+  "author": {
+    "name": "Mirek Rusin",
+    "url": "http://github.com/mirek"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "babel": "^5.8.29",
+    "chai": "^3.4.0",
+    "mocha": "^2.3.3"
+  },
+  "optionalDependencies": {
+    "pg": "^4.4.3"
+  }
+}
