@@ -1,6 +1,6 @@
 {
   "name": "pg-safe-numbers",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Safe number parsing for pg and Sequelize.",
   "homepage": "https://github.com/mirek/node-pg-safe-numbers",
   "bugs": "https://github.com/mirek/node-pg-safe-numbers/issues",
