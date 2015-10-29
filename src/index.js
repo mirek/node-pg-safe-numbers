@@ -73,11 +73,11 @@ export function pgSetTypeParsers({ pg: pg_, unsafeInt = defaultUnsafeInt, unsafe
   const pg = pg_ ? pg_ : require('pg');
 
   pg.types.setTypeParser(PgTypes.Int8, 'text', function (text) {
-    return safeParseInt(text, unsafeInt || defaultUnsafeInt);
+    return safeParseInt(text, unsafeInt);
   });
 
   pg.types.setTypeParser(PgTypes.Numeric, 'text', function (text) {
-    return safeParseFloat(text, unsafeFloat || defaultUnsafeFloat);
+    return safeParseFloat(text, unsafeFloat);
   });
 
 }
