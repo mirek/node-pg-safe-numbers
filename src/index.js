@@ -36,14 +36,26 @@ export function safeParseInt(text, unsafeHandler = defaultUnsafeInt) {
 }
 
 /**
+ * Trim float (currently on the right only).
+ * @param {string} text Float string.
+ * @return {string}
+ */
+export function floatTrim(text) {
+  if (text.indexOf('.') !== -1) {
+    return text.replace(/[0\s\uFEFF\xA0]+$/g, '');
+  }
+  return text;
+}
+
+/**
  * Compare number with it's floating point string represenation.
  * @param {Number} parsed
  * @param {String} text
  * @return {Boolean} True if the parsed number is the same as precision text representation.
  */
 export function floatCompare(parsed, text) {
-  let precision = (text.match(/[0-9]/g) || []).length - (Math.abs(parsed) < 1 && parsed !== 0 ? 1 : 0);
-  return parsed.toPrecision(precision) === text;
+  let precision = (text.match(/[0-9]/g) || []).length;
+  return floatTrim(parsed.toPrecision(precision)) === floatTrim(text);
 }
 
 /**
