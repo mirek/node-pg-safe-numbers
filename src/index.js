@@ -73,25 +73,61 @@ export function safeParseFloat(text, unsafeHandler = defaultUnsafeFloat) {
 }
 
 /**
+ * Remember old parsers so they can be unset.
+ * @type {Array}
+ */
+let pgSetTypeParsersStack = [];
+
+/**
  * Replace default pg parsers for Int8 and Numberic data types.
  * @param {pg?} .pg
- * @param {Function(parsed, text)?} unsafeInt Function handler to deal with unsafe input, default throws TypeError.
- * @param {Function(parsed, text)?} unsafeFloat Function handler to deal with unsafe input, default throws TypeError.
+ * @param {function(parsed, text)?} unsafeInt Function handler to deal with unsafe input, default throws TypeError.
+ * @param {function(parsed, text)?} unsafeFloat Function handler to deal with unsafe input, default throws TypeError.
+ * @return {array} Previous parsers.
  */
 export function pgSetTypeParsers({ pg: pg_, unsafeInt = defaultUnsafeInt, unsafeFloat = defaultUnsafeFloat } = {}) {
+
+  let result = [];
 
   const PgTypes = { Int8: 20, Numeric: 1700 };
 
   const pg = pg_ ? pg_ : require('pg');
 
+  result.push({
+    oid: PgTypes.Int8,
+    format: 'text',
+    func: pg.types.getTypeParser(PgTypes.Int8, 'text')
+  });
+
   pg.types.setTypeParser(PgTypes.Int8, 'text', function (text) {
     return safeParseInt(text, unsafeInt);
+  });
+
+  result.push({
+    oid: PgTypes.Numeric,
+    format: 'text',
+    func: pg.types.getTypeParser(PgTypes.Numeric, 'text')
   });
 
   pg.types.setTypeParser(PgTypes.Numeric, 'text', function (text) {
     return safeParseFloat(text, unsafeFloat);
   });
 
+  pgSetTypeParsersStack.push(result);
+
+  return result;
+}
+
+/**
+ * Reverts to previously used type parsers.
+ * TODO: Do it in context of pg.
+ */
+export function pgUnsetTypeParsers({ pg: pg_ } = {}) {
+  const pg = pg_ ? pg_ : require('pg');
+  const previous = pgSetTypeParsersStack.pop();
+  for (let { oid, format, func } of previous) {
+    pg.types.setTypeParser(oid, format, func);
+  }
 }
 
 /**

@@ -8,7 +8,8 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "npm run prepublish && mocha --compilers js:babel/register spec",
-    "prepublish": "rm -rf lib && babel --stage 0 src --out-dir lib"
+    "prepublish": "rm -rf lib && babel --stage 0 src --out-dir lib",
+    "show-pack": "npm pack && tar -tf *.tgz | sort && rm *.tgz"
   },
   "keywords": [
     "sequelize",
@@ -35,8 +36,7 @@
     "chai-as-promised": "^5.1.0",
     "mocha": "^2.3.3",
     "pg": "^4.4.3",
-    "pg-hstore": "^2.3.2",
-    "sequelize": "^3.13.0"
+    "pg-hstore": "^2.3.2"
   },
   "peerDependencies": {
     "pg": "^4"
