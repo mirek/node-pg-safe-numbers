@@ -1,9 +1,14 @@
 {
-  "presets": [
-    "stage-0",
-    "es2015"
-  ],
   "plugins": [
-    "transform-runtime"
+    "syntax-async-functions",
+    [
+      "transform-async-to-module-method", {
+        "module": "bluebird",
+        "method": "coroutine"
+      }
+    ],
+    "transform-es2015-destructuring",
+    "transform-es2015-modules-commonjs",
+    "transform-es2015-parameters"
   ]
 }
