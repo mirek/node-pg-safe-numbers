@@ -1,5 +1,5 @@
 
-## Summary
+## Summary [![Build Status](https://travis-ci.org/mirek/node-pg-safe-numbers.png?branch=master)](https://travis-ci.org/mirek/node-pg-safe-numbers)
 
 Safe number parsers for pg/sequelize. When unsafe parsing is detected, decision to handle this case is delegated to the
 caller. Default action is to throw `TypeError` exception. You can use your handlers to return parsed value, original
