@@ -1,5 +1,10 @@
-
 import util from 'util';
+
+let DefaultPg = null;
+let DefaultSequelize = null;
+
+try { DefaultPg = require('pg'); } catch (err) { } // eslint-disable-line no-empty
+try { DefaultSequelize = require('sequelize'); } catch (err) { } // eslint-disable-line no-empty
 
 /**
  * Default handler for unsafe int parser.
@@ -85,33 +90,59 @@ let pgSetTypeParsersStack = [];
  * @param {function(parsed, text)?} unsafeFloat Function handler to deal with unsafe input, default throws TypeError.
  * @return {array} Previous parsers.
  */
-export function pgSetTypeParsers({ pg: pg_, unsafeInt = defaultUnsafeInt, unsafeFloat = defaultUnsafeFloat } = {}) {
+export function pgSetTypeParsers({
+  pg = DefaultPg, Sequelize = DefaultSequelize, unsafeInt = defaultUnsafeInt, unsafeFloat = defaultUnsafeFloat
+} = {}) {
 
   let result = [];
 
-  const PgTypes = { Int8: 20, Numeric: 1700 };
+  if (pg) {
 
-  const pg = pg_ ? pg_ : require('pg');
+    const PgTypes = { Int8: 20, Numeric: 1700 };
 
-  result.push({
-    oid: PgTypes.Int8,
-    format: 'text',
-    func: pg.types.getTypeParser(PgTypes.Int8, 'text')
-  });
+    result.push({
+      kind: 'pg',
+      info: {
+        oid: PgTypes.Int8,
+        format: 'text',
+        func: pg.types.getTypeParser(PgTypes.Int8, 'text')
+      }
+    });
 
-  pg.types.setTypeParser(PgTypes.Int8, 'text', function (text) {
-    return safeParseInt(text, unsafeInt);
-  });
+    pg.types.setTypeParser(PgTypes.Int8, 'text', function (text) {
+      return safeParseInt(text, unsafeInt);
+    });
 
-  result.push({
-    oid: PgTypes.Numeric,
-    format: 'text',
-    func: pg.types.getTypeParser(PgTypes.Numeric, 'text')
-  });
+    result.push({
+      kind: 'pg',
+      info: {
+        oid: PgTypes.Numeric,
+        format: 'text',
+        func: pg.types.getTypeParser(PgTypes.Numeric, 'text')
+      }
+    });
 
-  pg.types.setTypeParser(PgTypes.Numeric, 'text', function (text) {
-    return safeParseFloat(text, unsafeFloat);
-  });
+    pg.types.setTypeParser(PgTypes.Numeric, 'text', function (text) {
+      return safeParseFloat(text, unsafeFloat);
+    });
+
+  }
+
+  if (Sequelize) {
+
+    result.push({
+      kind: 'sequelize',
+      info: {
+        type: 'DECIMAL',
+        parse: Sequelize.postgres.DECIMAL.parse
+      }
+    });
+
+    Sequelize.postgres.DECIMAL.parse = function (value) {
+      return safeParseFloat(value, unsafeFloat);
+    };
+
+  }
 
   pgSetTypeParsersStack.push(result);
 
@@ -122,11 +153,28 @@ export function pgSetTypeParsers({ pg: pg_, unsafeInt = defaultUnsafeInt, unsafe
  * Reverts to previously used type parsers.
  * TODO: Do it in context of pg.
  */
-export function pgUnsetTypeParsers({ pg: pg_ } = {}) {
-  const pg = pg_ ? pg_ : require('pg');
+export function pgUnsetTypeParsers({ pg = DefaultPg, Sequelize = DefaultSequelize } = {}) {
   const previous = pgSetTypeParsersStack.pop();
-  for (let { oid, format, func } of previous) {
-    pg.types.setTypeParser(oid, format, func);
+  for (const { kind, info } of previous) {
+    switch (kind) {
+
+      case 'pg':
+        if (pg) {
+          const { oid, format, func } = info;
+          pg.types.setTypeParser(oid, format, func);
+        }
+        break;
+
+      case 'sequelize':
+        if (Sequelize) {
+          const { type, parse } = info;
+          Sequelize.postgres[type].parse = parse;
+        }
+        break;
+
+      default:
+        throw new TypeError(`Unknown kind ${kind}, expected "pg" or "sequelize".`);
+    }
   }
 }
 
