@@ -45,6 +45,11 @@ describe('pg', function () {
       expect(await pg.value('select 9007199254740993::numeric')).to.eq('9007199254740993');
     });
 
+    it('should work with arrays', async function () {
+      expect(await pg.value('select \'{1}\'::bigint[]')).to.deep.eq([1]);
+      expect(await pg.value('select \'{1}\'::numeric[]')).to.deep.eq([1]);
+    });
+
   });
 
   describe('as parsed', async function () {

@@ -1,4 +1,5 @@
 import util from 'util';
+import postgresArray from 'postgres-array';
 
 let DefaultPg = null;
 let DefaultSequelize = null;
@@ -98,32 +99,43 @@ export function pgSetTypeParsers({
 
   if (pg) {
 
-    const PgTypes = { Int8: 20, Numeric: 1700 };
+    const PgTypes = {
+      Int8: 20,
+      Int8Array: 1016,
+      Numeric: 1700,
+      NumericArray: 1231
+    };
 
-    result.push({
-      kind: 'pg',
-      info: {
-        oid: PgTypes.Int8,
-        format: 'text',
-        func: pg.types.getTypeParser(PgTypes.Int8, 'text')
-      }
+    // Remember old parsers.
+    ['Int8', 'Int8Array', 'Numeric', 'NumericArray'].forEach(type => {
+      result.push({
+        kind: 'pg',
+        info: {
+          oid: PgTypes[type],
+          format: 'text',
+          func: pg.types.getTypeParser(PgTypes[type], 'text')
+        }
+      });
     });
 
-    pg.types.setTypeParser(PgTypes.Int8, 'text', function (text) {
+    const safeParseIntFunction = function (text) {
       return safeParseInt(text, unsafeInt);
-    });
+    };
 
-    result.push({
-      kind: 'pg',
-      info: {
-        oid: PgTypes.Numeric,
-        format: 'text',
-        func: pg.types.getTypeParser(PgTypes.Numeric, 'text')
-      }
-    });
-
-    pg.types.setTypeParser(PgTypes.Numeric, 'text', function (text) {
+    const safeParseFloatFunction = function (text) {
       return safeParseFloat(text, unsafeFloat);
+    };
+
+    pg.types.setTypeParser(PgTypes.Int8, 'text', safeParseIntFunction);
+
+    pg.types.setTypeParser(PgTypes.Numeric, 'text', safeParseFloatFunction);
+
+    pg.types.setTypeParser(PgTypes.Int8Array, 'text', function (text) {
+      return postgresArray.parse(text, safeParseIntFunction);
+    });
+
+    pg.types.setTypeParser(PgTypes.Int8Numeric, 'text', function (text) {
+      return postgresArray.parse(text, safeParseFloatFunction);
     });
 
   }
