@@ -51,6 +51,7 @@ describe('Sequelize', function () {
       expect(await db.value('select 9007199254740992::bigint')).to.eq('9007199254740992');
       expect(await db.value('select 9007199254740993::numeric')).to.eq('9007199254740993');
       expect(await db.value('select 1234.5::numeric')).to.eq('1234.5');
+      expect(await db.value('select \'{1}\'::bigint[]')).to.deep.eq(['1']);
     });
 
   });
@@ -74,6 +75,7 @@ describe('Sequelize', function () {
       expect(await db.value('select 9007199254740992::bigint')).to.eq('9007199254740992');
       expect(await db.value('select 1234.5::numeric')).to.eq(1234.5);
       expect(await db.value('select 9007199254740993::numeric')).to.eq('9007199254740993');
+      expect(await db.value('select \'{1}\'::bigint[]')).to.deep.eq([1]);
     });
 
   });
