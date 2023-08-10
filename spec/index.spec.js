@@ -19,7 +19,7 @@ describe('safeParseFloat', function () {
     expect(safeParseFloat('Infinity')).to.eq(Infinity);
     expect(safeParseFloat('+Infinity')).to.eq(+Infinity);
     expect(safeParseFloat('-Infinity')).to.eq(-Infinity);
-    expect(() => safeParseFloat('0.000000000001')).to.throw(TypeError);
+    expect(safeParseFloat('0.000000000001')).to.eq(0.000000000001);
     expect(safeParseFloat('3.45')).to.eq(3.45);
     expect(safeParseFloat('0.050')).to.eq(0.05);
     expect(safeParseFloat('0.550')).to.eq(0.55);

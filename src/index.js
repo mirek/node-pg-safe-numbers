@@ -60,8 +60,13 @@ export function floatTrim(text) {
  * @return {Boolean} True if the parsed number is the same as precision text representation.
  */
 export function floatCompare(parsed, text) {
-  let precision = (text.match(/[0-9]/g) || []).length;
-  return floatTrim(parsed.toPrecision(precision)) === floatTrim(text);
+  let precision = 0;
+  const decimalIndex = text.indexOf('.');
+  if (decimalIndex !== -1) {
+    precision = (text.substring(decimalIndex + 1).match(/[0-9]/g) || []).length;
+  }
+  return floatTrim(parsed.toFixed(precision)) === floatTrim(text);
+
 }
 
 /**
